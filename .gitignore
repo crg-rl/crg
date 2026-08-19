@@ -1,4 +1,5 @@
 .venv/
+.deps/
 __pycache__/
 *.py[cod]
 .ruff_cache/
@@ -7,5 +8,6 @@ build/
 dist/
 *.egg-info/
 outputs/
+data/visulogic/
 tiktoken_cache/
 .DS_Store
