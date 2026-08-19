@@ -20,18 +20,22 @@ if ! "$python_bin" -c 'import torch, vllm' >/dev/null 2>&1; then
   exit 2
 fi
 
-mkdir -p "$(dirname "$verl_dir")"
-if [[ ! -d "$verl_dir/.git" ]]; then
-  git clone https://github.com/verl-project/verl.git "$verl_dir"
-fi
-git -C "$verl_dir" fetch --quiet origin "$verl_commit"
-git -C "$verl_dir" checkout --detach "$verl_commit"
+checkout_dependency() {
+  local url="$1"
+  local directory="$2"
+  local commit="$3"
+  if [[ ! -d "$directory/.git" ]]; then
+    git clone "$url" "$directory"
+  fi
+  if ! git -C "$directory" cat-file -e "${commit}^{commit}" 2>/dev/null; then
+    git -C "$directory" fetch --quiet origin "$commit"
+  fi
+  git -C "$directory" checkout --detach "$commit"
+}
 
-if [[ ! -d "$mini_trainer_dir/.git" ]]; then
-  git clone https://github.com/Red-Hat-AI-Innovation-Team/mini_trainer.git "$mini_trainer_dir"
-fi
-git -C "$mini_trainer_dir" fetch --quiet origin "$mini_trainer_commit"
-git -C "$mini_trainer_dir" checkout --detach "$mini_trainer_commit"
+mkdir -p "$(dirname "$verl_dir")"
+checkout_dependency   https://github.com/verl-project/verl.git   "$verl_dir"   "$verl_commit"
+checkout_dependency   https://github.com/Red-Hat-AI-Innovation-Team/mini_trainer.git   "$mini_trainer_dir"   "$mini_trainer_commit"
 
 if git -C "$verl_dir" apply --reverse --check "$patch_file" >/dev/null 2>&1; then
   : # Patch is already applied.
