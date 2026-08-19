@@ -58,8 +58,8 @@ def require_osft_reprotect_api(actor_model: nn.Module) -> None:
 
 def mini_trainer_hint() -> str:
     return (
-        "Set MINI_TRAINER_SRC_ROOT to the osft-mini_trainer/src checkout "
-        "or place that checkout next to continual-rlvr-algorithms."
+        "Run scripts/setup.sh or set MINI_TRAINER_SRC_ROOT to the "
+        "mini_trainer/src checkout."
     )
 
 
@@ -69,12 +69,7 @@ def load_osft_utils_directly():
         repo_root = Path(__file__).resolve().parents[3]
         workspace_root = repo_root.parent
         candidates = [
-            workspace_root / "osft-mini_trainer" / "src",
-            repo_root.parents[2]
-            / "continual-reasoning-gym-baseline-sources"
-            / "code"
-            / "osft-mini_trainer"
-            / "src",
+            workspace_root / ".deps" / "mini_trainer" / "src",
         ]
     else:
         candidates = [Path(raw_root)]

@@ -1,21 +1,23 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
-export TIKTOKEN_ENCODINGS_BASE=./tiktoken_cache
+export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 project_name="mllm_cl"
-exp_name_base="qwen3_4b_single_tasks_algebra_grpo_fsdp_vllm_4_910b"
+exp_name_base="qwen3_4b_single_tasks_algebra_grpo_fsdp_vllm_crg"
 run_root="${exp_name_base}_$(date +%Y-%m-%d-%H-%M-%S)"
 mkdir -p "$run_root"
 
-n_gpu=4
-n_cpu=96
+n_gpu="${N_GPU:-4}"
+n_cpu="${N_CPU:-96}"
 model_path="${MODEL_PATH:-Qwen/Qwen3-4B}"
 
 # Run each task independently for the same number of steps as one CRL task.
-# Default matches crl_tasks_algebra_qwen3_4b_grpo_fsdp_vllm_910b.sh: 500 steps / 6 tasks -> 84 steps per task.
+# Default matches crl_tasks_algebra_qwen3_4b_grpo_fsdp_vllm.sh: 500 steps / 6 tasks -> 84 steps per task.
 steps_per_task="${STEPS_PER_TASK:-84}"
 
 # With reasoning_gym.dataset_size=20000 and data.train_batch_size=512:
@@ -23,7 +25,7 @@ steps_per_task="${STEPS_PER_TASK:-84}"
 total_epochs=13
 
 task_config_dir="$(
-  python - <<'PY'
+  "$PYTHON_BIN" - <<'PY'
 from pathlib import Path
 
 import mllm_crl
@@ -40,7 +42,7 @@ PY
 base_task_config="$task_config_dir"/crl_tasks_algebra.yaml
 
 mapfile -t tasks < <(
-  python - <<PY
+  "$PYTHON_BIN" - <<PY
 from omegaconf import OmegaConf
 
 cfg = OmegaConf.load("$base_task_config")
@@ -124,7 +126,7 @@ for task in "${tasks[@]}"; do
   mkdir -p "$task_dir"
 
   task_config="$task_dir"/task_config.yaml
-  python - <<PY
+  "$PYTHON_BIN" - <<PY
 from omegaconf import OmegaConf
 
 cfg = OmegaConf.load("$base_task_config")
@@ -150,7 +152,7 @@ PY
     trainer.logger="['console','tensorboard']"
   )
 
-  python -m mllm_crl.train \
+  "$PYTHON_BIN" -m mllm_crl.train \
       --config-name ppo_trainer \
       -- \
       ++task_config="$task_config" \

@@ -84,7 +84,7 @@ def _make_patched_from_pretrained(model_path: str, osft_config: OSFTConfig):
         _set_osft_dtypes(
             model,
             osft_upcast_dtype=osft_config.resolve_upcast_dtype(),
-            train_dtype=osft_config.resolve_output_dtype(),
+            osft_output_dtype=osft_config.resolve_output_dtype(),
         )
         return model
 

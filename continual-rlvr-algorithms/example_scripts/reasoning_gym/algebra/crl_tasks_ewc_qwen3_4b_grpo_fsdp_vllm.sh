@@ -2,14 +2,13 @@
 set -euo pipefail
 
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
 export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 project_name="continual_rlvr_algorithms"
-exp_name="qwen3_4b_crl_tasks_algebra_fire_attentionqk_no_lm_head_grpo_fsdp_vllm_4_910b"
+exp_name="qwen3_4b_crl_tasks_algebra_ewc_grpo_fsdp_vllm_crg"
 exp_dir="${exp_name}_$(date +%Y-%m-%d-%H-%M-%S)"
 mkdir "$exp_dir"
 
@@ -120,12 +119,11 @@ FSDP=(
 )
 
 METHOD=(
-    ++fire.enabled=true
-    ++fire.ns_steps=5
-    ++fire.include_lm_head=false
-    ++fire.reset_optimizer=true
-    ++fire.sync_rollout_after_reset=true
-    ++fire.reset_scope=attention_qk
+    ++ewc.enabled=true
+    ++ewc.penalty_coef=1.0
+    ++ewc.fisher_decay=1.0
+    ++ewc.max_fisher_samples=-1
+    ++ewc.eps=1e-8
 )
 
 ############################ Launch ############################
@@ -133,7 +131,7 @@ METHOD=(
 "$PYTHON_BIN" -m continual_rlvr_algorithms.train \
     --config-name ppo_trainer \
     -- \
-    +task_runner_cls=continual_rlvr_algorithms.method.fire.task_runner:FIREResettingReasoningGymRunner \
+    +task_runner_cls=continual_rlvr_algorithms.method.ewc.task_runner:EWCReasoningGymRunner \
     ++task_config="$task_config_dir"/crl_tasks_algebra.yaml \
     +crl.steps_per_task=$steps_per_task \
     "${DATA[@]}" \

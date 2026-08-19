@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import heapq
 import math
+import os
 import random
 from copy import deepcopy
 from dataclasses import dataclass, field, replace
@@ -472,6 +473,13 @@ class PromptReplaySampler(AbstractCurriculumSampler):
                 state.issued_new += 1
             state.issued_total += 1
             indices.append(slot_index)
+        if state.issued_replay and os.environ.get("CRG_REPLAY_TRACE"):
+            print(
+                "[CPR] batch "
+                f"{self.emitted_steps + 1}: replay={state.issued_replay} "
+                f"current={state.issued_new}",
+                flush=True,
+            )
         self.emitted_steps += 1
         return indices
 

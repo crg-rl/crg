@@ -13,13 +13,9 @@ REPO_ROOT = PACKAGE_ROOT.parent
 WORKSPACE_ROOT = REPO_ROOT.parent
 
 DEFAULT_MLLM_CRL_UPSTREAM_ROOT = WORKSPACE_ROOT / "mllm-crl"
-DEFAULT_VERL_UPSTREAM_ROOT = WORKSPACE_ROOT / "verl"
-DEFAULT_MINI_TRAINER_SRC_ROOT = WORKSPACE_ROOT / "osft-mini_trainer" / "src"
-REFERENCE_CACHE_ROOT = (
-    REPO_ROOT.parents[2] / "continual-reasoning-gym-baseline-sources" / "code"
-)
-FALLBACK_MINI_TRAINER_SRC_ROOT = (
-    REFERENCE_CACHE_ROOT / "osft-mini_trainer" / "src"
+DEFAULT_VERL_UPSTREAM_ROOT = WORKSPACE_ROOT / ".deps" / "verl"
+DEFAULT_MINI_TRAINER_SRC_ROOT = (
+    WORKSPACE_ROOT / ".deps" / "mini_trainer" / "src"
 )
 
 
@@ -39,12 +35,10 @@ def resolve_mini_trainer_src_root() -> Path:
         return path
     if DEFAULT_MINI_TRAINER_SRC_ROOT.exists():
         return DEFAULT_MINI_TRAINER_SRC_ROOT.resolve()
-    if FALLBACK_MINI_TRAINER_SRC_ROOT.exists():
-        return FALLBACK_MINI_TRAINER_SRC_ROOT.resolve()
     raise FileNotFoundError(
-        "Missing required upstream path for mini_trainer OSFT. Tried: "
-        f"{DEFAULT_MINI_TRAINER_SRC_ROOT} and {FALLBACK_MINI_TRAINER_SRC_ROOT}. "
-        "Set MINI_TRAINER_SRC_ROOT=/path/to/osft-mini_trainer/src."
+        "Missing required mini_trainer source tree at "
+        f"{DEFAULT_MINI_TRAINER_SRC_ROOT}. Run scripts/setup.sh or set "
+        "MINI_TRAINER_SRC_ROOT=/path/to/mini_trainer/src."
     )
 
 

@@ -1,10 +1,13 @@
+#!/usr/bin/env bash
 set -euo pipefail
+
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 export PYTHONUNBUFFERED=1
 export HYDRA_FULL_ERROR=1
 export WANDB_MODE=disabled
 export WANDB_DISABLED=true
-export TIKTOKEN_ENCODINGS_BASE=./tiktoken_cache
+export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 project_name="mllm_cl"
 exp_name="qwen2_5vl_7b_crl_tasks_visulogic_spatial_reasoning_grpo_fsdp_vllm"
@@ -15,10 +18,14 @@ n_gpu="${N_GPU:-8}"
 n_cpu="${N_CPU:-128}"
 model_path="${MODEL_PATH:-Qwen/Qwen2.5-VL-7B-Instruct}"
 
-# Domain-internal CRL over Figure-1 subtype tasks.
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../../.." && pwd)"
+workspace_code_root="$(cd "$repo_root/.." && pwd)"
+
+# CRG sequence over VisuLogic reasoning subtypes.
 domain_name="spatial_reasoning"
 domain_tag="Spatial Reasoning"
-data_root="./data/visulogic/domain-internal/${domain_name}/vanilla_crl"
+data_root="${VISULOGIC_DATA_ROOT:-$workspace_code_root/data/visulogic/spatial}"
 train_file="${data_root}/train.parquet"
 val_file="${data_root}/val.parquet"
 task_field="subcategory"
@@ -44,9 +51,8 @@ fi
 train_file_abs=$(readlink -f "$train_file")
 val_file_abs=$(readlink -f "$val_file")
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/../../.." && pwd)"
 VERL_CONFIG_ROOT="${VERL_CONFIG_ROOT:?Set VERL_CONFIG_ROOT to the installed VERL config directory}"
+verl_root="${VERL_SOURCE_ROOT:-${VERL_ROOT:-$workspace_code_root/.deps/verl}}"
 
 ############################ Parameter Groups ############################
 
@@ -146,7 +152,7 @@ FSDP=(
 ############################ Launch ############################
 
 PYTHONPATH="$repo_root:$verl_root:${PYTHONPATH:-}" \
-python -m verl.trainer.main_ppo \
+"$PYTHON_BIN" -m verl.trainer.main_ppo \
     --config-name ppo_trainer \
     -- \
     "${DATA[@]}" \

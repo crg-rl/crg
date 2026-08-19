@@ -2,14 +2,13 @@
 set -euo pipefail
 
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
 export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 project_name="continual_rlvr_algorithms"
-exp_name="qwen3_4b_crl_tasks_algorithmic_muon_grpo_fsdp_vllm_4_910b"
+exp_name="qwen3_4b_crl_tasks_algorithmic_muon_grpo_fsdp_vllm_crg"
 exp_dir="${exp_name}_$(date +%Y-%m-%d-%H-%M-%S)"
 mkdir "$exp_dir"
 

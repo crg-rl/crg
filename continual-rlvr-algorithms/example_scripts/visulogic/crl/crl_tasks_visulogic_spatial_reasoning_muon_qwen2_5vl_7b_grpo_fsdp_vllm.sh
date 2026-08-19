@@ -19,7 +19,7 @@ mkdir -p "$exp_dir"
 n_cpu="${N_CPU:-128}"
 model_path="${MODEL_PATH:-Qwen/Qwen2.5-VL-7B-Instruct}"
 
-# Domain-internal CRL over Figure-1 subtype tasks.
+# CRG sequence over VisuLogic reasoning subtypes.
 domain_name="spatial_reasoning"
 domain_tag="Spatial Reasoning"
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -27,8 +27,10 @@ repo_root="$(cd "$script_dir/../../.." && pwd)"
 workspace_code_root="${WORKSPACE_CODE_ROOT:-$(cd "$repo_root/.." && pwd)}"
 mllm_crl_root="${MLLM_CRL_ROOT:-$workspace_code_root/mllm-crl}"
 VERL_CONFIG_ROOT="${VERL_CONFIG_ROOT:?Set VERL_CONFIG_ROOT to the installed VERL config directory}"
+verl_root="${VERL_SOURCE_ROOT:-${VERL_ROOT:-$workspace_code_root/.deps/verl}}"
 
-data_root="${VISULOGIC_DATA_ROOT:-./data/visulogic/domain-internal/${domain_name}/vanilla_crl}"
+setting_name="${domain_name%_reasoning}"
+data_root="${VISULOGIC_DATA_ROOT:-$workspace_code_root/data/visulogic/${setting_name}}"
 train_file="${data_root}/train.parquet"
 val_file="${data_root}/val.parquet"
 task_field="subcategory"

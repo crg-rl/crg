@@ -4,7 +4,6 @@
 set -euo pipefail
 
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
 export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 

@@ -1,4 +1,7 @@
+#!/usr/bin/env bash
 set -euo pipefail
+
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 export PYTHONUNBUFFERED=1
 export HYDRA_FULL_ERROR=1
@@ -17,9 +20,13 @@ n_gpu="${N_GPU:-8}"
 n_cpu="${N_CPU:-128}"
 model_path="${MODEL_PATH:-Qwen/Qwen2.5-VL-7B-Instruct}"
 
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "$script_dir/../../.." && pwd)"
+workspace_code_root="$(cd "$repo_root/.." && pwd)"
+
 domain_name="quantitative_reasoning"
 domain_tag="Quantitative Reasoning"
-data_root="./data/visulogic/domain-internal/${domain_name}/vanilla_multitask"
+data_root="${VISULOGIC_DATA_ROOT:-$workspace_code_root/data/visulogic/quantitative}"
 train_file="${data_root}/train.parquet"
 val_file="${data_root}/val.parquet"
 train_batch_size=512
@@ -37,8 +44,6 @@ fi
 train_file_abs=$(readlink -f "$train_file")
 val_file_abs=$(readlink -f "$val_file")
 
-script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-repo_root="$(cd "$script_dir/../../.." && pwd)"
 export MLLM_CRL_REPO_ROOT="$repo_root"
 
 mkdir -p "$TIKTOKEN_ENCODINGS_BASE"
@@ -47,6 +52,7 @@ if [[ -d "$TIKTOKEN_CACHE_SOURCE_DIR" ]]; then
 fi
 
 VERL_CONFIG_ROOT="${VERL_CONFIG_ROOT:?Set VERL_CONFIG_ROOT to the installed VERL config directory}"
+verl_root="${VERL_SOURCE_ROOT:-${VERL_ROOT:-$workspace_code_root/.deps/verl}}"
 
 ############################ Parameter Groups ############################
 
@@ -141,7 +147,7 @@ FSDP=(
 ############################ Launch ############################
 
 PYTHONPATH="$repo_root:$verl_root:${PYTHONPATH:-}" \
-python -m verl.trainer.main_ppo \
+"$PYTHON_BIN" -m verl.trainer.main_ppo \
     --config-name ppo_trainer \
     -- \
     "${DATA[@]}" \

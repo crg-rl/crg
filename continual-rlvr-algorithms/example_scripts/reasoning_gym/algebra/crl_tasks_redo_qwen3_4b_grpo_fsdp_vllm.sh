@@ -2,14 +2,13 @@
 set -euo pipefail
 
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
 export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 project_name="continual_rlvr_algorithms"
-exp_name="qwen3_4b_crl_tasks_algebra_muon_grpo_fsdp_vllm_4_910b"
+exp_name="qwen3_4b_crl_tasks_algebra_redo_grpo_fsdp_vllm_crg"
 exp_dir="${exp_name}_$(date +%Y-%m-%d-%H-%M-%S)"
 mkdir "$exp_dir"
 
@@ -120,23 +119,12 @@ FSDP=(
 )
 
 METHOD=(
-    actor_rollout_ref.actor.strategy=fsdp2
+    ++redo.enabled=true
+    ++redo.tau=0.1
+    ++redo.use_lecun_init=false
+    ++redo.calibration_examples=8
     actor_rollout_ref.actor.fsdp_config.param_offload=false
     actor_rollout_ref.actor.fsdp_config.optimizer_offload=false
-    actor_rollout_ref.actor.fsdp_config.offload_policy=false
-    actor_rollout_ref.actor.fsdp_config.use_orig_params=false
-    ++actor_rollout_ref.actor.optim.optimizer=Muon
-    ++actor_rollout_ref.actor.optim.optimizer_impl=continual_rlvr_algorithms.method.muon.muon
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.momentum=0.95
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.ns_steps=5
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.nesterov=true
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.betas="[0.9,0.999]"
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.adamw_eps=1e-8
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.adjust_lr_fn=match_rms_adamw
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.adamw_lr_ratio=1.0
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.adamw_weight_decay_ratio=1.0
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.max_muon_aspect_ratio=8.0
-    ++actor_rollout_ref.actor.optim.override_optimizer_config.max_muon_dim=65536
 )
 
 ############################ Launch ############################
@@ -144,7 +132,7 @@ METHOD=(
 "$PYTHON_BIN" -m continual_rlvr_algorithms.train \
     --config-name ppo_trainer \
     -- \
-    +task_runner_cls=continual_rlvr_algorithms.method.task_runner:MethodHookReasoningGymRunner \
+    +task_runner_cls=continual_rlvr_algorithms.method.redo.task_runner:REDOReasoningGymRunner \
     ++task_config="$task_config_dir"/crl_tasks_algebra.yaml \
     +crl.steps_per_task=$steps_per_task \
     "${DATA[@]}" \

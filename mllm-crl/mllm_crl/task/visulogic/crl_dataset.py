@@ -17,7 +17,7 @@ class VisuLogicCrlTaskSpec:
 
 
 class VisuLogicCrlTaskSwitchingDataset(RLHFDataset):
-    """VisuLogic domain-internal CRL dataset for labeled parquet data.
+    """VisuLogic within-setting CRL dataset for labeled parquet data.
 
     The caller prepares one parquet per first-level domain and stores the
     second-level task label, such as ``subcategory``, in ``extra_info``.

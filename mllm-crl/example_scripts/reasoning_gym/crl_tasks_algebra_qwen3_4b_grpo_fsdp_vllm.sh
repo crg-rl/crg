@@ -1,17 +1,19 @@
+#!/usr/bin/env bash
 set -euo pipefail
 
+PYTHON_BIN="${PYTHON_BIN:-python3}"
+
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
-export TIKTOKEN_ENCODINGS_BASE=./tiktoken_cache
+export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 project_name="mllm_cl"
-exp_name="qwen3_4b_crl_tasks_algebra_grpo_fsdp_vllm_4_910b"
+exp_name="qwen3_4b_crl_tasks_algebra_grpo_fsdp_vllm_crg"
 exp_dir="${exp_name}_$(date +%Y-%m-%d-%H-%M-%S)"
-mkdir $exp_dir
+mkdir -p "$exp_dir"
 
-n_gpu=4
-n_cpu=96
+n_gpu="${N_GPU:-4}"
+n_cpu="${N_CPU:-96}"
 model_path="${MODEL_PATH:-Qwen/Qwen3-4B}"
 
 # Task-level CRL: switch within the "algebra" domain across tasks.
@@ -25,7 +27,7 @@ steps_per_task=84
 total_epochs=13
 
 task_config_dir="$(
-  python - <<'PY'
+  "$PYTHON_BIN" - <<'PY'
 from pathlib import Path
 
 import mllm_crl
@@ -118,7 +120,7 @@ FSDP=(
 
 ############################ Launch ############################
 
-python -m mllm_crl.train \
+"$PYTHON_BIN" -m mllm_crl.train \
     --config-name ppo_trainer \
     -- \
     ++task_config="$task_config_dir"/crl_tasks_algebra.yaml \

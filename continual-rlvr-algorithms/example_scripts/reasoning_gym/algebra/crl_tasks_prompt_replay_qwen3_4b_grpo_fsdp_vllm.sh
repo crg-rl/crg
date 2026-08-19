@@ -2,14 +2,13 @@
 set -euo pipefail
 
 export PYTHONUNBUFFERED=1
-export VLLM_ASCEND_ENABLE_NZ=0
 export HYDRA_FULL_ERROR=1
 export TIKTOKEN_ENCODINGS_BASE="${TIKTOKEN_ENCODINGS_BASE:-./tiktoken_cache}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 project_name="continual_rlvr_algorithms"
-exp_name="qwen3_4b_crl_tasks_algorithmic_fire_attentionqk_no_lm_head_grpo_fsdp_vllm_4_910b"
+exp_name="qwen3_4b_crl_tasks_algebra_prompt_replay_grpo_fsdp_vllm_crg"
 exp_dir="${exp_name}_$(date +%Y-%m-%d-%H-%M-%S)"
 mkdir "$exp_dir"
 
@@ -17,11 +16,11 @@ n_gpu="${N_GPU:-4}"
 n_cpu="${N_CPU:-96}"
 model_path="${MODEL_PATH:-Qwen/Qwen3-4B}"
 
-# Task-level CRL: switch within the algorithmic domain across tasks.
-num_tasks=10
+# Task-level CRL: switch within the algebra domain across tasks.
+num_tasks=6
 total_training_steps=500
-# 500 total steps across 10 tasks => 50 steps / task.
-steps_per_task=50
+# 500 total steps across 6 tasks => 84 steps / task.
+steps_per_task=84
 
 # With reasoning_gym.dataset_size=20000 and data.train_batch_size=512:
 # len(dataloader) ~= floor(20000 / 512) = 39, so 13 epochs ~= 507 steps.
@@ -120,12 +119,15 @@ FSDP=(
 )
 
 METHOD=(
-    ++fire.enabled=true
-    ++fire.ns_steps=5
-    ++fire.include_lm_head=false
-    ++fire.reset_optimizer=true
-    ++fire.sync_rollout_after_reset=true
-    ++fire.reset_scope=attention_qk
+    ++data.sampler.class_path=pkg://continual_rlvr_algorithms.method.prompt_replay.prompt_replay
+    ++data.sampler.class_name=PromptReplaySampler
+    ++data.sampler.enabled=true
+    ++data.sampler.replay_scope=previous_tasks
+    ++data.sampler.replay_fraction=0.5
+    ++data.sampler.cooldown_steps=5
+    ++data.sampler.min_pass_rate=0.24
+    ++data.sampler.max_pass_rate=0.7
+    ++data.sampler.seed=1
 )
 
 ############################ Launch ############################
@@ -133,8 +135,8 @@ METHOD=(
 "$PYTHON_BIN" -m continual_rlvr_algorithms.train \
     --config-name ppo_trainer \
     -- \
-    +task_runner_cls=continual_rlvr_algorithms.method.fire.task_runner:FIREResettingReasoningGymRunner \
-    ++task_config="$task_config_dir"/crl_tasks_algorithmic.yaml \
+    +task_runner_cls=continual_rlvr_algorithms.method.prompt_replay.task_runner:PromptReplayReasoningGymRunner \
+    ++task_config="$task_config_dir"/crl_tasks_algebra.yaml \
     +crl.steps_per_task=$steps_per_task \
     "${DATA[@]}" \
     "${MODEL[@]}" \

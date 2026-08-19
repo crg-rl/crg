@@ -70,8 +70,6 @@ class ReasoningGymRunner(TaskRunner):
         resource_pool_manager = self.init_resource_pool_mgr(config)
 
         train_dataset, val_dataset = prepare_datasets(config, tokenizer)
-        # TODO: train_sampler = create_rl_sampler(config.data, train_dataset)
-
         # Initialize the PPO trainer.
         trainer = RayPPOTrainer(
             config=config,
@@ -84,7 +82,6 @@ class ReasoningGymRunner(TaskRunner):
             processor=processor,
             train_dataset=train_dataset,
             val_dataset=val_dataset,
-            # TODO: train_sampler=train_sampler,
         )
         # Initialize the workers of the trainer.
         trainer.init_workers()
