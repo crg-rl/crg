@@ -7,6 +7,7 @@ import importlib
 import json
 import os
 import sys
+from importlib import metadata
 from pathlib import Path
 
 
@@ -23,16 +24,21 @@ def main() -> int:
         raise RuntimeError(f"expected Python 3.11 or 3.12, found {sys.version}")
 
     versions = {}
-    for name in (
-        "torch",
-        "vllm",
-        "verl",
-        "reasoning_gym",
-        "mllm_crl",
-        "continual_rlvr_algorithms",
-    ):
-        module = importlib.import_module(name)
-        versions[name] = getattr(module, "__version__", "installed")
+    packages = {
+        "torch": "torch",
+        "vllm": "vllm",
+        "verl": "verl",
+        "reasoning_gym": "reasoning-gym",
+        "mllm_crl": "mllm-crl",
+        "continual_rlvr_algorithms": "continual-rlvr-algorithms",
+    }
+    for module_name, distribution_name in packages.items():
+        module = importlib.import_module(module_name)
+        try:
+            version = metadata.version(distribution_name)
+        except metadata.PackageNotFoundError:
+            version = getattr(module, "__version__", "installed")
+        versions[module_name] = version
 
     import torch
     importlib.import_module(
