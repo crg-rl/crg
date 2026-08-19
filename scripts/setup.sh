@@ -11,8 +11,8 @@ patch_file="$repo_root/patches/verl-crg-runtime.patch"
 
 "$python_bin" - <<'PY'
 import sys
-if sys.version_info[:2] != (3, 11):
-    raise SystemExit(f"CRG requires Python 3.11; found {sys.version.split()[0]}")
+if sys.version_info[:2] not in {(3, 11), (3, 12)}:
+    raise SystemExit(f"CRG requires Python 3.11 or 3.12; found {sys.version.split()[0]}")
 PY
 
 if ! "$python_bin" -c 'import torch, vllm' >/dev/null 2>&1; then

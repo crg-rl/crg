@@ -19,8 +19,8 @@ def main() -> int:
     }
     for name, path in defaults.items():
         os.environ.setdefault(name, str(path))
-    if sys.version_info[:2] != (3, 11):
-        raise RuntimeError(f"expected Python 3.11, found {sys.version}")
+    if sys.version_info[:2] not in {(3, 11), (3, 12)}:
+        raise RuntimeError(f"expected Python 3.11 or 3.12, found {sys.version}")
 
     versions = {}
     for name in (

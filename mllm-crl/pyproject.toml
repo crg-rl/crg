@@ -3,7 +3,7 @@ name = "mllm_crl"
 version = "0.1.0"
 description = "Task streams, rewards, and evaluation for Continual Reasoning Gym."
 readme = "README.md"
-requires-python = ">=3.11,<3.12"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "hydra-core>=1.3.2",
     "reasoning-gym==0.1.24",
