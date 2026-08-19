@@ -9,7 +9,7 @@
 [![Project Page](https://img.shields.io/badge/Project-Page-2ea44f?style=for-the-badge)](https://crg-rl.github.io/)
 [![Code](https://img.shields.io/badge/Code-GitHub-24292f?style=for-the-badge&logo=github)](https://github.com/crg-rl/crg)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776ab?style=for-the-badge&logo=python)](mllm-crl/pyproject.toml)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.7-ee4c2c?style=for-the-badge&logo=pytorch)](https://pytorch.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.8-ee4c2c?style=for-the-badge&logo=pytorch)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
 </div>
@@ -39,7 +39,7 @@ This repository contains the paper's task streams, reward functions, training en
 
 ## Quick Start
 
-CRG targets Python 3.11, PyTorch 2.7.x, vLLM 0.11.x, and NVIDIA GPUs. Install CUDA-compatible PyTorch and vLLM wheels for your machine before running the setup script.
+CRG targets Python 3.11, PyTorch 2.8.x, vLLM 0.11.x, and NVIDIA GPUs. Install CUDA-compatible PyTorch and vLLM wheels for your machine before running the setup script.
 
 ```bash
 git clone https://github.com/crg-rl/crg.git
@@ -80,7 +80,7 @@ Hydra overrides supplied after the setting are forwarded to the underlying launc
 ### Prerequisites
 
 1. Python 3.11
-2. NVIDIA GPUs with a CUDA runtime supported by PyTorch 2.7.x
+2. NVIDIA GPUs with a CUDA runtime supported by PyTorch 2.8.x
 3. vLLM 0.11.x
 4. Git and a C/C++ toolchain
 

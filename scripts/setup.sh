@@ -16,7 +16,7 @@ if sys.version_info[:2] != (3, 11):
 PY
 
 if ! "$python_bin" -c 'import torch, vllm' >/dev/null 2>&1; then
-  echo "Install CUDA-compatible PyTorch 2.7.x and vLLM 0.11.x first." >&2
+  echo "Install CUDA-compatible PyTorch 2.8.x and vLLM 0.11.x first." >&2
   exit 2
 fi
 
