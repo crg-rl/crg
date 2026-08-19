@@ -1,0 +1,99 @@
+[project]
+name = "mllm_crl"
+version = "0.1.0"
+description = "Task streams, rewards, and evaluation for Continual Reasoning Gym."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "hydra-core>=1.3.2",
+    "reasoning-gym==0.1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.13.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = [
+    "mllm_crl",
+    "evaluation",
+]
+include = [
+    "mllm_crl/**/*.py",
+    "mllm_crl/**/*.yaml",
+    "evaluation/**/*.py",
+    "evaluation/**/*.yaml",
+]
+
+[tool.ruff]
+# Enable automatic fixes.
+fix = true
+# Line-length limit.
+line-length = 79
+# Target Python version.
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "PL",   # pylint
+    "RUF",  # Ruff-specific rules
+    "C4",   # flake8-comprehensions
+    "T20",  # flake8-print
+    "TCH",  # flake8-type-checking
+    "ERA",  # eradicate
+    "FBT",  # flake8-boolean-trap
+    "DTZ",  # flake8-datetimez
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "PIE",  # flake8-pie
+    "LOG",  # flake8-logging-format
+]
+
+# Ignored rules.
+ignore = [
+    "F401",  # unused imports in __init__.py
+    "F841",  # unused variables
+    "PLR0913", # functions with more than five arguments
+    "T20",   # print and pprint calls
+]
+
+# Excluded directories.
+exclude = [
+    ".git",
+    ".ruff_cache",
+    "build",
+    "__pycache__",
+    "*.pyc",
+]
+
+# Fix imports automatically.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # allow unused imports in __init__.py
+"tests/*" = ["S101"]      # allow assert in tests
+"mllm_crl/task/reasoning_gym/ray_ppo_trainer.py" = ["E501", "SIM118", "PLC0415", "PLR0915", "PLR0912"] # trainer checks deferred until refactoring
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true

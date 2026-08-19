@@ -1,0 +1,92 @@
+[project]
+name = "continual-rlvr-algorithms"
+version = "0.1.0"
+description = "Algorithm methods for continual RLVR experiments on top of mllm-crl and VERL."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "reasoning-gym==0.1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.13.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = [
+    "continual_rlvr_algorithms",
+]
+include = [
+    "continual_rlvr_algorithms/**/*.py",
+]
+
+[tool.ruff]
+# Enable automatic fixes.
+fix = true
+# Line length.
+line-length = 79
+# Target Python version.
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "F",    # pyflakes
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "PL",   # pylint
+    "RUF",  # Ruff-specific rules
+    "C4",   # flake8-comprehensions
+    "T20",  # flake8-print
+    "TCH",  # flake8-type-checking
+    "ERA",  # eradicate
+    "FBT",  # flake8-boolean-trap
+    "DTZ",  # flake8-datetimez
+    "TID",  # flake8-tidy-imports
+    "ARG",  # flake8-unused-arguments
+    "PIE",  # flake8-pie
+    "LOG",  # flake8-logging-format
+]
+
+# Ignored rules.
+ignore = [
+    "F401",  # unused imports in __init__.py
+    "F841",  # unused local variables
+    "PLR0913", # allow method/config entry points with several arguments
+    "T20",   # allow simple script output
+]
+
+# Excluded paths.
+exclude = [
+    ".git",
+    ".ruff_cache",
+    "build",
+    "__pycache__",
+    "*.pyc",
+]
+
+# Import and lint fixes.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # allow public re-exports
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true

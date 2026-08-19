@@ -1,0 +1,30 @@
+# Hydra config for text base-ability evaluation.
+# Set checkpoint, output_dir, and output for formal runs.
+mode: checkpoint  # checkpoint | collect | build | spec | example
+
+score_files: []
+checkpoint: null
+output_dir: null
+collect_output_dir: null
+output: null
+benchmarks: null
+
+# lm-eval settings for formal evaluation.
+device: npu
+batch_size: auto
+allow_eval_batch_size_one: false
+lm_eval_entrypoint: module
+lm_eval_binary: lm_eval
+trust_remote_code: true
+model_args: []
+skip_existing: true
+dry_run: false
+strict: false
+allow_output_in_repo: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${oc.env:MLLM_CRL_EVAL_HYDRA_DIR,/tmp/mllm-crl-eval-hydra}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  output_subdir: .hydra

@@ -1,0 +1,25 @@
+# Policy-entropy metric evaluator.
+#
+# Formal benchmark table results use final checkpoint + fixed prompt set +
+# greedy generation + VERL entropy_from_logits.
+mode: evaluate  # evaluate | spec | example
+output: null
+prompt_set: null
+model_path: null
+modality: null  # llm | vlm
+output_jsonl: null
+summary_json: null
+max_new_tokens: 1024
+batch_size: 1
+score_batch_size: 0
+dtype: bfloat16
+device_map: auto
+limit: null
+allow_output_in_repo: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${oc.env:MLLM_CRL_EVAL_HYDRA_DIR,/tmp/mllm-crl-eval-hydra}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  output_subdir: .hydra

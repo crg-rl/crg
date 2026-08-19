@@ -1,0 +1,34 @@
+# Hydra config for VLM general-ability evaluation.
+# Set checkpoint, output_dir, and output for formal runs.
+mode: checkpoint  # checkpoint | collect | build | spec | example
+
+score_files: []
+checkpoint: null
+output_dir: null
+collect_output_dir: null
+output: null
+benchmarks: null
+
+# EvalScope + VLMEvalKit settings. Defaults avoid upstream batch=1.
+# Record the hardware, backend, and runtime context for formal rows.
+# Set dtype when a model family requires an explicit override.
+evalscope_binary: evalscope
+model_type: qwen2_5_vl
+model_id: mllm_crl_vlm
+model_kwargs: {}
+eval_batch_size: 32
+judge_worker_num: 4
+allow_eval_batch_size_one: false
+limit: null
+eval_args: []
+skip_existing: true
+dry_run: false
+strict: false
+allow_output_in_repo: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${oc.env:MLLM_CRL_EVAL_HYDRA_DIR,/tmp/mllm-crl-eval-hydra}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  output_subdir: .hydra

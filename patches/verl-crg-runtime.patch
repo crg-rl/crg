@@ -1,0 +1,148 @@
+diff --git a/verl/utils/checkpoint/checkpoint_manager.py b/verl/utils/checkpoint/checkpoint_manager.py
+index 9f48147b..879a43aa 100644
+--- a/verl/utils/checkpoint/checkpoint_manager.py
++++ b/verl/utils/checkpoint/checkpoint_manager.py
+@@ -191,7 +191,9 @@ class BaseCheckpointManager:
+         random.setstate(rng_state["random"])
+ 
+         if get_device_name() != "cpu":
+-            get_torch_device().set_rng_state(rng_state[get_device_name()])
++            device_rng_state = rng_state.get(get_device_name())
++            if device_rng_state is not None:
++                get_torch_device().set_rng_state(device_rng_state)
+ 
+ 
+ def find_latest_ckpt_path(path, directory_format="global_step_{}"):
+diff --git a/verl/utils/checkpoint/fsdp_checkpoint_manager.py b/verl/utils/checkpoint/fsdp_checkpoint_manager.py
+index 2bd57d90..0699b92a 100644
+--- a/verl/utils/checkpoint/fsdp_checkpoint_manager.py
++++ b/verl/utils/checkpoint/fsdp_checkpoint_manager.py
+@@ -23,12 +23,14 @@ import torch
+ import torch.distributed
+ from accelerate import init_empty_weights
+ from omegaconf import DictConfig
++from torch.distributed._tensor import DTensor
++from torch.distributed.device_mesh import _mesh_resources
+ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
+ from torch.distributed.fsdp import ShardedOptimStateDictConfig, ShardedStateDictConfig, StateDictType
+ from transformers import GenerationConfig, PreTrainedTokenizer, ProcessorMixin
+ from transformers.dynamic_module_utils import custom_object_save
+ 
+-from verl.utils.device import is_cuda_available
++from verl.utils.device import is_cuda_available, is_npu_available
+ from verl.utils.fs import copy_to_local, is_non_local, local_mkdir_safe
+ from verl.utils.fsdp_utils import fsdp_version, get_fsdp_full_state_dict, get_fsdp_state_ctx
+ from verl.utils.logger import log_with_rank
+@@ -40,6 +42,52 @@ logger = logging.getLogger(__file__)
+ logger.setLevel(os.getenv("VERL_LOGGING_LEVEL", "INFO"))
+ 
+ 
++def should_offload_state_dict_to_cpu() -> bool:
++    """Return whether sharded FSDP checkpoint IO should offload tensors to CPU.
++
++    CUDA and Ascend NPU both benefit from CPU-offloaded state-dict IO here.
++    Using device-resident DTensor shards on NPU can trip the root-mesh assertion
++    during checkpoint load, so checkpoint paths should treat NPU the same way as
++    CUDA for this offload decision.
++    """
++
++    return is_cuda_available or is_npu_available
++
++
++def retarget_dtensor_tree_to_model_mesh(tree, target_mesh):
++    """Rebuild serialized DTensor shards onto the active model mesh.
++
++    Checkpoints saved on CUDA can contain CPU-offloaded DTensors whose
++    ``device_mesh`` still records a CUDA root mesh. Loading those shards on an
++    NPU-backed FSDP model trips PyTorch's root-mesh assertion before the
++    pre-load hook can move them. Rebuild the DTensors onto the current model
++    root mesh first so the subsequent SHARDED_STATE_DICT load sees matching
++    mesh metadata.
++    """
++
++    if target_mesh is None:
++        return tree
++    if isinstance(tree, DTensor):
++        local_tensor = tree.to_local()
++        if local_tensor.device.type != target_mesh.device_type:
++            local_tensor = local_tensor.to(target_mesh.device_type)
++        return DTensor.from_local(
++            local_tensor,
++            target_mesh,
++            tree.placements,
++            run_check=False,
++            shape=tree.size(),
++            stride=tree.stride(),
++        )
++    if isinstance(tree, dict):
++        return {key: retarget_dtensor_tree_to_model_mesh(value, target_mesh) for key, value in tree.items()}
++    if isinstance(tree, list):
++        return [retarget_dtensor_tree_to_model_mesh(value, target_mesh) for value in tree]
++    if isinstance(tree, tuple):
++        return tuple(retarget_dtensor_tree_to_model_mesh(value, target_mesh) for value in tree)
++    return tree
++
++
+ @dataclass
+ class FSDPConfig:
+     """Configuration for FSDP checkpointing.
+@@ -120,13 +168,14 @@ class FSDPCheckpointManager(BaseCheckpointManager):
+             )
+ 
+         # every rank download its own checkpoint
++        offload_to_cpu = should_offload_state_dict_to_cpu()
+         state_dict_cfg = (
+-            ShardedStateDictConfig(offload_to_cpu=True if is_cuda_available else False)
++            ShardedStateDictConfig(offload_to_cpu=offload_to_cpu)
+             if self.should_load_model
+             else None
+         )
+         optim_cfg = (
+-            ShardedOptimStateDictConfig(offload_to_cpu=True if is_cuda_available else False)
++            ShardedOptimStateDictConfig(offload_to_cpu=offload_to_cpu)
+             if self.should_load_optimizer
+             else None
+         )
+@@ -135,6 +184,10 @@ class FSDPCheckpointManager(BaseCheckpointManager):
+                 remote_model_path = os.path.join(local_path, f"model_world_size_{self.world_size}_rank_{self.rank}.pt")
+                 local_model_path = copy_to_local(remote_model_path)
+                 model_state_dict = torch.load(local_model_path, weights_only=False)
++                target_mesh = getattr(self.model, "_device_mesh", None)
++                if target_mesh is not None:
++                    target_mesh = _mesh_resources.get_root_mesh(target_mesh)
++                model_state_dict = retarget_dtensor_tree_to_model_mesh(model_state_dict, target_mesh)
+                 self.model.load_state_dict(model_state_dict)
+                 log_with_rank(f"Loaded model from {remote_model_path}", rank=self.rank, logger=logger)
+ 
+@@ -216,8 +269,9 @@ class FSDPCheckpointManager(BaseCheckpointManager):
+             )
+ 
+         # every rank will save its own model and optim shard
+-        state_dict_cfg = ShardedStateDictConfig(offload_to_cpu=True if is_cuda_available else False)
+-        optim_cfg = ShardedOptimStateDictConfig(offload_to_cpu=True if is_cuda_available else False)
++        offload_to_cpu = should_offload_state_dict_to_cpu()
++        state_dict_cfg = ShardedStateDictConfig(offload_to_cpu=offload_to_cpu)
++        optim_cfg = ShardedOptimStateDictConfig(offload_to_cpu=offload_to_cpu)
+         with warnings.catch_warnings():
+             warnings.simplefilter("ignore")
+             with get_fsdp_state_ctx(self.model, StateDictType.SHARDED_STATE_DICT, state_dict_cfg, optim_cfg):
+diff --git a/verl/utils/fsdp_utils.py b/verl/utils/fsdp_utils.py
+index 3ee2b40c..cee10749 100644
+--- a/verl/utils/fsdp_utils.py
++++ b/verl/utils/fsdp_utils.py
+@@ -618,12 +618,10 @@ def collect_lora_params(module: FSDP, layered_summon: bool, base_sync_done: bool
+     lora_params = OrderedDict()
+     peft_model = getattr(module, "_fsdp_wrapped_module", module)
+     if fsdp_version(module) > 0:
++        if layered_summon and not base_sync_done:
++            # Refresh the full base model after SplitLoRA invalidates rollout sync.
++            layered_summon = False
+         if layered_summon:
+-            if not base_sync_done:
+-                raise ValueError(
+-                    "To use layered_summon, you must make sure base-model is preloaded in vllm, e.g. let "
+-                    "rollout.load_format=safetensors"
+-                )
+             lora_params = layered_summon_lora_params(module)
+         else:
+             with FSDP.summon_full_params(module, writeback=False):

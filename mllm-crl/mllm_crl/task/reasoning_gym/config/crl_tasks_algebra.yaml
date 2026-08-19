@@ -1,0 +1,30 @@
+reasoning_gym:
+  dataset_size: 20000
+  developer_prompt: DeepSeekZero
+  datasets:
+    complex_arithmetic:
+      weight: 1
+    intermediate_integration:
+      weight: 1
+    polynomial_equations:
+      weight: 1
+    polynomial_multiplication:
+      weight: 1
+    simple_equations:
+      weight: 1
+    simple_integration:
+      weight: 1
+
+curriculum:
+  enabled: False
+
+crl:
+  enabled: True
+  # Match `trainer.save_freq` and `trainer.test_freq` to this boundary.
+  # The launcher sets steps_per_task.
+  valid_ratio: 0.1
+  # Validation runs at each task boundary with 256 examples.
+  val_dataset_size: 256
+  train_seed: 1
+  val_seed: 2
+  task_seed_stride: 1000

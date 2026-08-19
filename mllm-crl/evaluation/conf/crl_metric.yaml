@@ -1,0 +1,18 @@
+# CRL retention/performance matrix materializer.
+#
+# Compute continual-RL metrics from a completed performance matrix.
+mode: build  # build | spec | example_pairs | example_matrix
+input: null
+output: null
+summary_output: null
+suite_id: null
+source_format: null
+strict: true
+allow_output_in_repo: false
+
+hydra:
+  job:
+    chdir: false
+  run:
+    dir: ${oc.env:MLLM_CRL_EVAL_HYDRA_DIR,/tmp/mllm-crl-eval-hydra}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  output_subdir: .hydra
