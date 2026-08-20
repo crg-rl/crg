@@ -7,6 +7,7 @@
 **Lirui Luo · Guoxi Zhang · Hongming Xu · Rongqing Li · Cong Fang · Lifeng Fan**
 
 [![Project Page](https://img.shields.io/badge/Project-Page-2ea44f?style=for-the-badge)](https://crg-rl.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-2608.18574-b31b1b?style=for-the-badge&logo=arxiv)](https://arxiv.org/abs/2608.18574)
 [![Code](https://img.shields.io/badge/Code-GitHub-24292f?style=for-the-badge&logo=github)](https://github.com/crg-rl/crg)
 [![Python 3.11 or 3.12](https://img.shields.io/badge/Python-3.11%20%7C%203.12-3776ab?style=for-the-badge&logo=python)](mllm-crl/pyproject.toml)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.8-ee4c2c?style=for-the-badge&logo=pytorch)](https://pytorch.org/)
@@ -229,7 +230,11 @@ If you find this repository useful, please cite:
 @article{luo2026continualreasoninggym,
   title   = {Continual Reasoning Gym: Diagnosing and Harnessing Shared Reasoning in Continual RLVR},
   author  = {Luo, Lirui and Zhang, Guoxi and Xu, Hongming and Li, Rongqing and Fang, Cong and Fan, Lifeng},
-  journal = {arXiv preprint},
+  journal = {arXiv preprint arXiv:2608.18574},
+  eprint  = {2608.18574},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  url     = {https://arxiv.org/abs/2608.18574},
   year    = {2026}
 }
 ```
