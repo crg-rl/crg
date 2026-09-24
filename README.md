@@ -1,6 +1,6 @@
 <div align="center">
 
-# Continual Reasoning Gym: Diagnosing and Harnessing Shared Reasoning in Continual RLVR
+# Beyond Forgetting: Diagnosing and Harnessing Shared Reasoning in Continual RLVR
 
 **Official implementation of Continual Reasoning Gym (CRG) and Continual Prompt Replay (CPR)**
 
@@ -227,8 +227,8 @@ PYTHONPATH="$PWD/continual-rlvr-algorithms" \
 If you find this repository useful, please cite:
 
 ```bibtex
-@article{luo2026continualreasoninggym,
-  title   = {Continual Reasoning Gym: Diagnosing and Harnessing Shared Reasoning in Continual RLVR},
+@article{luo2026beyondforgetting,
+  title   = {Beyond Forgetting: Diagnosing and Harnessing Shared Reasoning in Continual RLVR},
   author  = {Luo, Lirui and Zhang, Guoxi and Xu, Hongming and Li, Rongqing and Fang, Cong and Fan, Lifeng},
   journal = {arXiv preprint arXiv:2608.18574},
   eprint  = {2608.18574},

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-title: "Continual Reasoning Gym: Diagnosing and Harnessing Shared Reasoning in Continual RLVR"
-message: "If you use this software, please cite the Continual Reasoning Gym paper."
+title: "Beyond Forgetting: Diagnosing and Harnessing Shared Reasoning in Continual RLVR"
+message: "If you use this software, please cite the Beyond Forgetting paper."
 type: software
 authors:
   - family-names: Luo
@@ -21,7 +21,7 @@ repository-code: "https://github.com/crg-rl/crg"
 url: "https://crg-rl.github.io/"
 preferred-citation:
   type: article
-  title: "Continual Reasoning Gym: Diagnosing and Harnessing Shared Reasoning in Continual RLVR"
+  title: "Beyond Forgetting: Diagnosing and Harnessing Shared Reasoning in Continual RLVR"
   authors:
     - family-names: Luo
       given-names: Lirui
